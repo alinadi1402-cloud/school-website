@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --foreground-rgb: 31, 41, 55;
+  --background-rgb: 255, 255, 255;
+
+  /* رنگ‌های اصلی استخراج شده از کد */
+  --color-primary: #0a4a8f;
+  --color-accent: #d4af37;
+  --color-primary-light: #e8f0fe;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: 'Vazirmatn', Tahoma, sans-serif;
+  direction: rtl;
+}
+
+/* اسکرول بار سفارشی */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e8f0fe;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0a4a8f;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #083a70;
+}
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}

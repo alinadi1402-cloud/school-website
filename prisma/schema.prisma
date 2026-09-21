@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+   binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  fullName  String
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      String   @default("student")
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+}
+
+model News {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String
+  imageData String   @default("")
+  createdAt DateTime @default(now())
+}
+
+model Gallery {
+  id          Int      @id @default(autoincrement())
+  title       String
+  imageData   String   @default("")
+  description String   @default("")
+  category    String   @default("عمومی")
+  createdAt   DateTime @default(now())
+}
+
+model Teacher {
+  id         Int      @id @default(autoincrement())
+  name       String
+  subject    String
+  education  String   @default("")
+  experience String   @default("")
+  imageData  String   @default("")
+  createdAt  DateTime @default(now())
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  userName  String
+  comment   String
+  rating    Int      @default(5)
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  senderId    Int
+  senderName  String
+  recipientId Int
+  text        String
+  isRead      Boolean  @default(false)
+  reply       String   @default("")
+  createdAt   DateTime @default(now())
+}
+
+model Survey {
+  id        Int      @id @default(autoincrement())
+  title     String
+  question  String
+  options   String
+  createdBy String
+  createdAt DateTime @default(now())
+}
+
+model Exam {
+  id        Int      @id @default(autoincrement())
+  title     String
+  subject   String
+  questions String
+  createdBy String
+  createdAt DateTime @default(now())
+}
+
+model StudentGrade {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  subject     String
+  grade       Float
+  teacherName String
+  createdAt   DateTime @default(now())
+}
+
+model Complaint {
+  id          Int      @id @default(autoincrement())
+  studentId   Int
+  studentName String
+  subject     String
+  reason      String
+  status      String   @default("pending")
+  response    String   @default("")
+  createdAt   DateTime @default(now())
+}
