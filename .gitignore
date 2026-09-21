@@ -44,3 +44,4 @@ dist/
 .env
 "prisma/dev.db" 
 "prisma/*.db" 
+prisma/dev.db 
