@@ -31,9 +31,9 @@ model Gallery {
   id          Int      @id @default(autoincrement())
   title       String
   imageData   String   @default("")
-  mediaType String @default("image")
   description String   @default("")
   category    String   @default("عمومی")
+  mediaType String @default("image")
   createdAt   DateTime @default(now())
 }
 
