@@ -249,6 +249,7 @@ const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
   }
 
 const addGalleryItem = async () => {
+  alert('دکمه Add کار می‌کنه!')
   if (!newGalleryTitle) { alert('عنوان را وارد کنید!'); return }
   
   try {
