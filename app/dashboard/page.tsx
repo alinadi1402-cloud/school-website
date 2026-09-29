@@ -27,6 +27,7 @@ export default function DashboardPage() {
   const [newsImageName, setNewsImageName] = useState('')
   const newsImageInputRef = useRef<HTMLInputElement>(null)
   const [galleryItems, setGalleryItems] = useState<any[]>([])
+  const [galleryMediaType, setGalleryMediaType] = useState('image')
   const [newGalleryTitle, setNewGalleryTitle] = useState('')
   const [newGalleryDescription, setNewGalleryDescription] = useState('')
   const [galleryImage, setGalleryImage] = useState('')
@@ -170,15 +171,24 @@ export default function DashboardPage() {
     }
   }
 
-  const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) { alert('حجم تصویر نباید بیشتر از ۲ مگابایت باشد!'); return }
-      const reader = new FileReader()
-      reader.onload = (event) => { setGalleryImage(event.target?.result as string); setGalleryImageName(file.name) }
-      reader.readAsDataURL(file)
+const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (file) {
+    // محدودیت حجم: عکس ۲ مگ، فیلم ۱۰ مگ
+    const maxSize = file.type.startsWith('video/') ? 10 * 1024 * 1024 : 2 * 1024 * 1024
+    if (file.size > maxSize) {
+      alert(file.type.startsWith('video/') ? 'حجم فیلم نباید بیشتر از ۱۰ مگابایت باشد!' : 'حجم تصویر نباید بیشتر از ۲ مگابایت باشد!')
+      return
     }
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      setGalleryImage(event.target?.result as string)
+      setGalleryImageName(file.name)
+      setGalleryMediaType(file.type.startsWith('video/') ? 'video' : 'image')
+    }
+    reader.readAsDataURL(file)
   }
+}
 
   const handleTeacherImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -238,17 +248,39 @@ export default function DashboardPage() {
     localStorage.setItem('testimonials', JSON.stringify(updatedTestimonials))
   }
 
-  const addGalleryItem = () => {
-    if (!newGalleryTitle) { alert('عنوان را وارد کنید!'); return }
-    const newItem = { id: Date.now(), title: newGalleryTitle, category: 'عمومی', imageData: galleryImage, description: newGalleryDescription }
-    const updatedGallery = [...galleryItems, newItem]
-    setGalleryItems(updatedGallery)
-    localStorage.setItem('gallery', JSON.stringify(updatedGallery))
-    fetch('/api/gallery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: newGalleryTitle, imageData: galleryImage, description: newGalleryDescription }) }).catch(err => console.error(err))
-    setNewGalleryTitle(''); setGalleryImage(''); setGalleryImageName(''); setNewGalleryDescription('')
-    if (galleryImageInputRef.current) galleryImageInputRef.current.value = ''
-    alert('تصویر اضافه شد!')
+const addGalleryItem = () => {
+  if (!newGalleryTitle) { alert('عنوان را وارد کنید!'); return }
+  const newItem = { 
+    id: Date.now(), 
+    title: newGalleryTitle, 
+    category: 'عمومی', 
+    imageData: galleryImage, 
+    description: newGalleryDescription,
+    mediaType: galleryMediaType
   }
+  const updatedGallery = [...galleryItems, newItem]
+  setGalleryItems(updatedGallery)
+  localStorage.setItem('gallery', JSON.stringify(updatedGallery))
+  
+  fetch('/api/gallery', { 
+    method: 'POST', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify({ 
+      title: newGalleryTitle, 
+      imageData: galleryImage, 
+      description: newGalleryDescription,
+      mediaType: galleryMediaType
+    }) 
+  }).catch(err => console.error(err))
+  
+  setNewGalleryTitle('')
+  setGalleryImage('')
+  setGalleryImageName('')
+  setNewGalleryDescription('')
+  setGalleryMediaType('image')
+  if (galleryImageInputRef.current) galleryImageInputRef.current.value = ''
+  alert('آیتم اضافه شد!')
+}
 
   const deleteGalleryItem = (id: number) => {
     const updatedGallery = galleryItems.filter(item => item.id !== id)
@@ -741,14 +773,14 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   <input type="text" value={newGalleryTitle} onChange={(e) => setNewGalleryTitle(e.target.value)} placeholder="عنوان" className="w-full px-4 py-3 border rounded-lg" />
                   <input type="text" value={newGalleryDescription} onChange={(e) => setNewGalleryDescription(e.target.value)} placeholder="توضیحات" className="w-full px-4 py-3 border rounded-lg" />
-                  <input type="file" accept="image/*" ref={galleryImageInputRef} onChange={handleGalleryImageUpload} className="w-full px-4 py-3 border rounded-lg" />
+                  <input type="file" accept="image/*,video/*" ref={galleryImageInputRef} onChange={handleGalleryImageUpload} className="w-full px-4 py-3 border rounded-lg" /><p className="text-xs text-gray-400 mt-1">عکس (تا ۲ مگ) یا فیلم (تا ۱۰ مگ)</p>
                   <button onClick={addGalleryItem} className="px-6 py-2 rounded-lg text-white font-bold" style={{ backgroundColor: '#0a4a8f' }}>افزودن</button>
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 {galleryItems.map(item => (
                   <div key={item.id} className="bg-white p-4 rounded-lg shadow-lg">
-                    {item.imageData && <img src={item.imageData} alt={item.title} className="h-24 w-full object-cover rounded mb-2" />}
+                    {item.imageData ? (item.mediaType === 'video' ? (<video src={item.imageData} controls className="h-32 w-full object-cover rounded mb-3" />) : (<img src={item.imageData} alt={item.title} className="h-32 w-full object-cover rounded mb-3" />)) : (<div className="h-32 bg-purple-100 rounded flex items-center justify-center mb-3"><Image className="w-12 h-12 text-purple-400" /></div>)}
                     <h3 className="font-bold text-sm">{item.title}</h3>
                     <button onClick={() => deleteGalleryItem(item.id)} className="px-3 py-1 bg-red-600 text-white rounded-lg text-sm mt-2">حذف</button>
                   </div>

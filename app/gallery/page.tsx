@@ -51,7 +51,19 @@ export default function GalleryPage() {
               {galleryItems.map((item) => (
                 <div key={item.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow">
                   {item.imageData ? (
-                    <img src={item.imageData} alt={item.title} className="h-48 w-full object-cover" />
+                    item.mediaType === 'video' ? (
+                      <video 
+                        src={item.imageData} 
+                        controls 
+                        className="h-48 w-full object-cover" 
+                      />
+                    ) : (
+                      <img 
+                        src={item.imageData} 
+                        alt={item.title} 
+                        className="h-48 w-full object-cover" 
+                      />
+                    )
                   ) : (
                     <div className="h-48 bg-gray-100 flex items-center justify-center">
                       <ImageIcon className="w-12 h-12 text-gray-400" />

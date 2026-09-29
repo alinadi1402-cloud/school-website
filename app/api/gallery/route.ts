@@ -13,14 +13,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const gallery = await prisma.gallery.create({
-      data: {
-        title: body.title,
-        imageData: body.imageData || '',
-        description: body.description || '',
-        category: body.category || 'عمومی'
-      }
-    })
+const gallery = await prisma.gallery.create({
+  data: {
+    title: body.title,
+    imageData: body.imageData || '',
+    description: body.description || '',
+    category: body.category || 'عمومی',
+    mediaType: body.mediaType || 'image'
+  }
+})
     return NextResponse.json({ success: true, gallery })
   } catch (error) {
     return NextResponse.json({ success: false, error: 'خطا' }, { status: 500 })
