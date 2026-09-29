@@ -5,12 +5,19 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
     
-    const user = await prisma.user.findFirst({
-      where: {
-        username: body.username,
-        password: body.password
-      }
-    })
+const user = await prisma.user.findFirst({
+  where: {
+    username: body.username
+  }
+})
+
+if (!user) {
+  return NextResponse.json({ success: false, error: 'کاربر یافت نشد' }, { status: 401 })
+}
+
+if (user.password !== body.password) {
+  return NextResponse.json({ success: false, error: 'رمز عبور اشتباه است' }, { status: 401 })
+}
     
     if (!user) {
       return NextResponse.json({ success: false, error: 'نام کاربری یا رمز عبور اشتباه است' }, { status: 401 })

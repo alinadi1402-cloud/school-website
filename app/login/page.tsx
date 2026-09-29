@@ -15,47 +15,57 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const users = JSON.parse(localStorage.getItem('users') || '[]')
-    const user = users.find((u: any) => u.username === formData.username)
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password
+        })
+      })
 
-    if (!user) {
-      alert('نام کاربری یافت نشد!')
-      return
+      const result = await response.json()
+
+      if (!result.success) {
+        alert('نام کاربری یا رمز عبور اشتباه است!')
+        return
+      }
+
+      const user = result.user
+
+      if (user.status === 'pending') {
+        alert('حساب شما در انتظار تایید مدیر است!')
+        return
+      }
+
+      if (user.status === 'approved') {
+        alert('لطفاً از لینک فعال‌سازی پیامک شده استفاده کنید!')
+        return
+      }
+
+      const sessionData = {
+        id: user.id,
+        fullName: user.fullName,
+        username: user.username,
+        role: user.role,
+        phone: user.phone,
+        status: user.status,
+        loginTime: new Date().toISOString()
+      }
+
+      if (formData.rememberMe) {
+        localStorage.setItem('currentUser', JSON.stringify(sessionData))
+      } else {
+        sessionStorage.setItem('currentUser', JSON.stringify(sessionData))
+      }
+
+      alert('خوش آمدید ' + user.fullName + ' عزیز!')
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Login error:', error)
+      alert('خطا در ارتباط با سرور!')
     }
-
-    if (user.status === 'pending') {
-      alert('حساب شما در انتظار تایید مدیر است!')
-      return
-    }
-
-    if (user.status === 'approved') {
-      alert('لطفاً از لینک فعال‌سازی پیامک شده استفاده کنید!')
-      return
-    }
-
-    if (user.password !== btoa(formData.password)) {
-      alert('رمز عبور اشتباه است!')
-      return
-    }
-
-    const sessionData = {
-      id: user.id,
-      fullName: user.fullName,
-      username: user.username,
-      role: user.role,
-      phone: user.phone,
-      status: user.status,
-      loginTime: new Date().toISOString()
-    }
-
-    if (formData.rememberMe) {
-      localStorage.setItem('currentUser', JSON.stringify(sessionData))
-    } else {
-      sessionStorage.setItem('currentUser', JSON.stringify(sessionData))
-    }
-
-    alert('خوش آمدید ' + user.fullName + ' عزیز!')
-    router.push('/dashboard')
   }
 
   return (
