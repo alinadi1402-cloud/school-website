@@ -248,38 +248,51 @@ const handleGalleryImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     localStorage.setItem('testimonials', JSON.stringify(updatedTestimonials))
   }
 
-const addGalleryItem = () => {
+const addGalleryItem = async () => {
   if (!newGalleryTitle) { alert('عنوان را وارد کنید!'); return }
-  const newItem = { 
-    id: Date.now(), 
-    title: newGalleryTitle, 
-    category: 'عمومی', 
-    imageData: galleryImage, 
-    description: newGalleryDescription,
-    mediaType: galleryMediaType
-  }
-  const updatedGallery = [...galleryItems, newItem]
-  setGalleryItems(updatedGallery)
-  localStorage.setItem('gallery', JSON.stringify(updatedGallery))
   
-  fetch('/api/gallery', { 
-    method: 'POST', 
-    headers: { 'Content-Type': 'application/json' }, 
-    body: JSON.stringify({ 
+  try {
+    const response = await fetch('/api/gallery', { 
+      method: 'POST', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ 
+        title: newGalleryTitle, 
+        imageData: galleryImage, 
+        description: newGalleryDescription,
+        mediaType: galleryMediaType
+      }) 
+    })
+    
+    const result = await response.json()
+    
+    if (!result.success) {
+      alert('خطا در ذخیره: ' + (result.error || 'نامشخص'))
+      console.error('Gallery error:', result)
+      return
+    }
+    
+    // اگه موفق بود، به لیست اضافه کن
+    const newItem = { 
+      id: result.gallery.id, 
       title: newGalleryTitle, 
+      category: 'عمومی', 
       imageData: galleryImage, 
       description: newGalleryDescription,
       mediaType: galleryMediaType
-    }) 
-  }).catch(err => console.error(err))
-  
-  setNewGalleryTitle('')
-  setGalleryImage('')
-  setGalleryImageName('')
-  setNewGalleryDescription('')
-  setGalleryMediaType('image')
-  if (galleryImageInputRef.current) galleryImageInputRef.current.value = ''
-  alert('آیتم اضافه شد!')
+    }
+    setGalleryItems([newItem, ...galleryItems])
+    
+    alert('آیتم اضافه شد!')
+    setNewGalleryTitle('')
+    setGalleryImage('')
+    setGalleryImageName('')
+    setNewGalleryDescription('')
+    setGalleryMediaType('image')
+    if (galleryImageInputRef.current) galleryImageInputRef.current.value = ''
+  } catch (error) {
+    console.error('Gallery fetch error:', error)
+    alert('خطا در ارتباط با سرور!')
+  }
 }
 
   const deleteGalleryItem = (id: number) => {
